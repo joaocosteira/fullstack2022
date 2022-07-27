@@ -1,3 +1,3 @@
-### Part 3
+### Part 3 (Phonebook Backend)
 
-For deployment purposes, the part 3 of this course was development in a different repository, accessible [here](https://github.com/joaocosteira/phonebook_backend).
+For deployment purposes, the third part of this course was development in a different repository, accessible [here](https://github.com/joaocosteira/phonebook_backend).
