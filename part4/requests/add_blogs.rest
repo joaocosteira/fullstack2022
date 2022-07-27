@@ -1,0 +1,9 @@
+POST http://localhost:3001/api/blogs
+Content-Type: application/json
+
+{
+    "title" : "Very Important Post",
+    "author" : "costeira",
+    "url" : "https://www.google.pt/",
+    "likes" : 33
+}
