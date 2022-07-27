@@ -26,9 +26,9 @@ const App = () => {
         personsServices
           .update(alreadyExist.id,{...alreadyExist , number : newNumber})
           .then( r =>{
-            setPersons(persons.map(p => p.id !== r.data.id ? p : r.data));
+            setPersons(persons.map(p => p.name !== r.data.name ? p : r.data));
             sendNotification(`Updated '${r.data.name}' contact successefully`,'success');
-          })
+          }).catch( error => { sendNotification(error.response.data.error); });
       }
     }else{
       personsServices
@@ -37,7 +37,7 @@ const App = () => {
           setPersons([...persons, r.data])
           sendNotification(`Added '${r.data.name}' contact successefully`,'success');
         }
-      )
+      ).catch( error => { sendNotification(error.response.data.error); });
       
     }
     setNewName('');
