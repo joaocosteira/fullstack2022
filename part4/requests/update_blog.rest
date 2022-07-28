@@ -1,0 +1,9 @@
+PUT http://localhost:3001/api/blogs/62e307e761f791bc3bd6e075
+Content-Type: application/json
+
+{
+      "title": "Very Important Post",
+      "author": "costeira",
+      "url": "https://www.google.pt",
+      "likes": 34
+}
