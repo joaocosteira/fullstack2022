@@ -11,7 +11,9 @@ const biggestKey = b => Object.keys(b).reduce((t,c) => b[c] > b[t] ? c : t)
 const groupBy = k => l => l.reduce((t,b) => ({...t, [b.author] : b[k] + (t[b.author] || 0) }) ,{})
 const blogsPerAuthor = blogs => blogs.reduce((t,b) => ({...t, [b.author] : 1 + (t[b.author] || 0)}), {})
 
-const mostBlogs = blogs => blogs.length ? compose(toObject("blogs"),split(id,biggestKey),blogsPerAuthor)(blogs) :  {}
-const mostLikes = blogs => blogs.length ? compose(toObject("likes"),split(id,biggestKey),groupBy('likes'))(blogs) : {}
+const aggregateBiggestby = (k,f) => blogs => blogs.length ? compose(toObject(k),split(id,biggestKey),f)(blogs) :  {}
+
+const mostBlogs = blogs =>  aggregateBiggestby("blogs",blogsPerAuthor)(blogs) 
+const mostLikes = blogs => aggregateBiggestby("likes",groupBy('likes'))(blogs)
 
 module.exports = { dummy,totalLikes,favoriteBlog,mostBlogs,mostLikes }
