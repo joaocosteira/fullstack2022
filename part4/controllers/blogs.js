@@ -1,56 +1,80 @@
 const blogsRouter = require('express').Router();
 const Blog = require('../models/blog')
-
-
-/* blogsRouter.get('/', (request, response) => {
-    Blog
-      .find({})
-      .then(blogs => {
-        response.json(blogs)
-      })
-})
-  
-blogsRouter.post('/', (request, response) => {
-    const blog = new Blog(request.body)
-
-    blog
-        .save()
-        .then(result => {
-        response.status(201).json(result)
-        })
-}) */
+const User = require('../models/user')
+const jwt = require('jsonwebtoken')
+const {userExtractor} = require('../utils/middleware')
 
 blogsRouter.get('/', async (request, response) => {
 
-  const blogs = await Blog.find({});
+  const blogs = await Blog.find({}).populate('user', { username: 1, name: 1 });
   response.json(blogs);
 
 })
+
+
+/* const getTokenFrom = request => {
+  const authorization = request.get('authorization')
+  if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
+    return authorization.substring(7)
+  }
+  return null
+} */
   
-blogsRouter.post('/', async (request, response) => {
+blogsRouter.post('/', userExtractor ,async (request, response,next) => {
 
-    const blog = new Blog( { ...request.body , likes : request.body.likes || 0 })
+  
+  const body = request.body
+  
+  try{
+    //const token = getTokenFrom(request)
+    //const decodedToken = jwt.verify(request.token, process.env.SECRET)
+/*     if (!decodedToken.id) {
+      return response.status(401).json({ error: 'token missing or invalid' })
+    } */
+    //const user = await User.findById(decodedToken.id)
+    const user = request.user;
 
-    try{
-      await blog.save();
-      response.status(201).json(blog)
-    }catch(e){ response.status(400).end() }
+    const {userId,...blogAtt} = body
+    //const user = await User.findById(userId)
 
+    const blog = new Blog({ ...blogAtt, user: user._id, author : user.name, likes : blogAtt.likes || 0 })
+
+    const savedBlog = await blog.save()
+    user.blogs = user.blogs.concat(savedBlog._id)
+    await user.save()
+    response.status(201).json(savedBlog)
+  }catch(e){
+    next(e)
+  }
+  
 })
 
 
 
-blogsRouter.delete('/:id', async (request, response) => {
+blogsRouter.delete('/:id', userExtractor ,async (request, response,next) => {
 
   try{
-    await Blog.findByIdAndRemove(request.params.id);
-    response.status(204).end();
+    //const decodedToken = jwt.verify(request.token, process.env.SECRET)
+    //const user = await User.findById(decodedToken.id) //logged user
+    const user = request.user
+    const blogToDelete = await Blog.findById(request.params.id)
+
+    console.log("user",user)
+    console.log("author",blogToDelete.user)
+    if(blogToDelete && blogToDelete.user.toString() === user._id.toString()){
+      await Blog.findByIdAndRemove(request.params.id);
+      response.status(204).end();
+    }else{
+      response.status(400).json({ error : "Trying to delete a post that you didn't make or that doesn't exist"}) 
+    }
   }catch(error){
-    if (error.name === 'CastError') {
+    next(error)
+/*     if (error.name === 'CastError') {
       return response.status(400).send({ error: 'malformatted id' })
     } else {
       return response.status(400).json({ error: error.message })
-    }
+    } */
+
   }
 
 })
@@ -74,6 +98,7 @@ blogsRouter.put('/:id', async (request, response) => {
     }
   }
 })
+
 
 
 module.exports = blogsRouter

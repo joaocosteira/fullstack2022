@@ -3,6 +3,7 @@ const supertest = require('supertest')
 const app = require('../app')
 //Case I want to insert some data before running the tests:
 const Blog = require('../models/blog');
+const User = require('../models/user');
 const api = supertest(app)
 
 
@@ -96,15 +97,17 @@ describe('when there is initially some notes saved', () => {
 
     test('New Blog with no likes, authomatically is set with 0 likes', async () => {
 
+      const user = {username : "costeira", password : "password"}
+      const tokenResponse = await api.post(`/api/login`).send(user)
 
       const newBlog = {
           "title" : "Test Important Post",
-          "author" : "costeira",
           "url" : "https://www.google.pt/"
       }
     
-      const response = await api.post('/api/blogs').send(newBlog);
-    
+      const response = await api.post('/api/blogs').set('Authorization', `bearer ${tokenResponse.body.token}`).send(newBlog);
+      //console.log("Response",response.body);
+
       expect(response.body.likes).toBe(0);
     
     })    
@@ -113,17 +116,18 @@ describe('when there is initially some notes saved', () => {
 describe('Add Blogs:', () => {
 
   test('a valid blog can be added', async () => {
-  
-  
+    
+    const user = {username : "costeira", password : "password"}
+    const tokenResponse = await api.post(`/api/login`).send(user)
     const newBlog = {
         "title" : "Test Important Post",
-        "author" : "costeira",
         "url" : "https://www.google.pt/",
         "likes" : 69
     }
   
     await api
       .post('/api/blogs')
+      .set('Authorization', `bearer ${tokenResponse.body.token}`)
       .send(newBlog)
       .expect(201)
       .expect('Content-Type', /application\/json/)
@@ -138,19 +142,55 @@ describe('Add Blogs:', () => {
   
     expect(response.body).toHaveLength(initialBlogs.length + 1)
     expect(title).toContain(newBlog.title)
-    expect(author).toContain(newBlog.author)
+    expect(author).toContain(user.username)
     expect(url).toContain(newBlog.url)
     expect(likes).toContain(newBlog.likes)
   
+  })
+
+  test('a blog without a valid token is not added', async () => {
+    
+    const user = {username : "costeira", password : "password"}
+    const tokenResponse = await api.post(`/api/login`).send(user)
+    const newBlog = {
+        "title" : "Test Important Post",
+        "url" : "https://www.google.pt/",
+        "likes" : 69
+    }
+    
+    const token = tokenResponse.body.token
+    await api
+      .post('/api/blogs')
+      .set('Authorization', `bearer ${token.slice(0,token.length-1)}`)
+      .send(newBlog)
+      .expect(401)
+
+  })
+
+
+  test('a blog without Authorization is not added', async () => {
+    
+    const newBlog = {
+        "title" : "Test Important Post",
+        "url" : "https://www.google.pt/",
+        "likes" : 69
+    }
+    
+    await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(401)
+
   })
   
   
   test('blog without content is not added', async () => {
   
     const newBlog = {}
-  
+    const tokenResponse = await api.post(`/api/login`).send({username : "costeira", password : "password"})
     await api
       .post('/api/blogs')
+      .set('Authorization', `bearer ${tokenResponse.body.token}`)
       .send(newBlog)
       .expect(400)
   
@@ -163,11 +203,13 @@ describe('Add Blogs:', () => {
   
   
   test('blog without title and url is not added', async () => {
-  
+    
+    const tokenResponse = await api.post(`/api/login`).send({username : "costeira", password : "password"})
     const newBlog = {author : "nobody"}
   
     await api
       .post('/api/blogs')
+      .set('Authorization', `bearer ${tokenResponse.body.token}`)
       .send(newBlog)
       .expect(400)
   
@@ -181,11 +223,30 @@ describe('Add Blogs:', () => {
 describe('deletion of a blog', () => {
 
   test('succeeds with status code 204 if id is valid', async () => {
+
+    //const validUser = await User.find({ name : 'costeira'});
+    //login a user
+
+    const tokenResponse = await api.post(`/api/login`).send({username : "costeira", password : "password"})
+    const token = tokenResponse.body.token;
+
+    const newPost = {
+      "title" : "doesn't matter",
+      "url" : "https://www.doentmatter.com/",
+      "likes" : 1
+    }
+
+    
+    const responsePost = await api.post('/api/blogs').set('Authorization', `bearer ${token}`).send(newPost)
+
+  
     const blogsAtStart = await Blog.find({});
-    const blogToDelete = blogsAtStart[0]
+
+    //const blogToDelete = blogsAtStart[0]
 
     await api
-      .delete(`/api/blogs/${blogToDelete.id}`)
+      .delete(`/api/blogs/${responsePost.body.id}`)
+      .set('Authorization', `bearer ${token}`)
       .expect(204)
 
     const blogsAtEnd = await Blog.find({});
@@ -196,7 +257,7 @@ describe('deletion of a blog', () => {
 
     const titles = blogsAtEnd.map(r => r.title)
 
-    expect(titles).not.toContain(blogToDelete.title)
+    expect(titles).not.toContain(newPost.title)
   })
 })
 
