@@ -8,8 +8,8 @@ import blogService from './services/blogs'
 import loginService from './services/login'
 
 const App = () => {
-  const [blogs, setBlogs] = useState([]);
-  const [user, setUser] = useState(null);
+  const [blogs, setBlogs] = useState([])
+  const [user, setUser] = useState(null)
   const [notification,setNotification] = useState({ message : null , style : null })
 
   const loginFormRef = useRef()
@@ -18,7 +18,7 @@ const App = () => {
   useEffect(() => {
     blogService.getAll().then(blogs =>
       setBlogs( blogs )
-    )  
+    )
   }, [])
 
 
@@ -32,7 +32,7 @@ const App = () => {
   }, [])
 
 
-  const sendNotification = (message,style="err",delay=2000) =>{
+  const sendNotification = (message,style='err',delay=2000) => {
 
     setNotification({ message, style })
     setTimeout(() => {
@@ -41,51 +41,51 @@ const App = () => {
 
   }
 
-  const handleNewBlog = async (blogObject) =>{
-    
-    console.log("blogObject",blogObject);
+  const handleNewBlog = async (blogObject) => {
+
+    console.log('blogObject',blogObject)
     try{
-      const newBlog = await blogService.create(blogObject);
-      console.log("newBlog",newBlog);
-      setBlogs([...blogs,newBlog]);
-      sendNotification(`Added '${newBlog.title}' by '${newBlog.author}'`, 'succ');
-      blogFormRef.current.toggleVisibility();
+      const newBlog = await blogService.create(blogObject)
+      console.log('newBlog',newBlog)
+      setBlogs([...blogs,newBlog])
+      sendNotification(`Added '${newBlog.title}' by '${newBlog.author}'`, 'succ')
+      blogFormRef.current.toggleVisibility()
     }catch(e){
       sendNotification(e.message.error,'err')
     }
   }
   const handleLogin = async (credentials) => {
-    
+
     try {
       const user = await loginService.login(credentials)
 
       window.localStorage.setItem(
         'loggedBlogAppUser', JSON.stringify(user)
-      ) 
-      blogService.setToken(user.token);
+      )
+      blogService.setToken(user.token)
       setUser(user)
       sendNotification(`Logged in as '${user.username}'`,'succ')
     } catch (exception) {
-      sendNotification('Wrong credentials','err');
+      sendNotification('Wrong credentials','err')
     }
   }
 
 
 
-  const logout = () =>{
+  const logout = () => {
 
-    window.localStorage.removeItem('loggedBlogAppUser');
-    blogService.setToken(null);
-    setUser(null);
+    window.localStorage.removeItem('loggedBlogAppUser')
+    blogService.setToken(null)
+    setUser(null)
   }
 
-  console.log("user",user);
+  console.log('user',user)
 
 
-  const vote = async (blog) =>{
+  const vote = async (blog) => {
 
     try{
-      const updatedBlog = await blogService.update(blog.id, {...blog , likes : blog.likes + 1, user : blog.user.id })
+      const updatedBlog = await blogService.update(blog.id, { ...blog , likes : blog.likes + 1, user : blog.user.id })
       setBlogs(blogs.map( b => b.id === updatedBlog.id ? updatedBlog : b))
     }catch(e){
       console.log(e)
@@ -95,21 +95,21 @@ const App = () => {
 
   const deleteBlog = async (blog) => {
 
-      try{
-        if(window.confirm(`Remove blog '${blog.title}' by ${blog.author}`)){
-          await blogService.deleteBlog(blog.id);
-          setBlogs(blogs.filter( b => b.id !== blog.id))
-        }
-      }catch(e){
-        console.log(e);
+    try{
+      if(window.confirm(`Remove blog '${blog.title}' by ${blog.author}`)){
+        await blogService.deleteBlog(blog.id)
+        setBlogs(blogs.filter( b => b.id !== blog.id))
       }
+    }catch(e){
+      console.log(e)
+    }
 
   }
   const blogsToShow = blogs.sort((a,b) => b.likes - a.likes )
   return (
     <div>
       <Notification notification={notification}/>
-      { !user && 
+      { !user &&
       <Togglable buttonLabel='Login' ref={loginFormRef}>
         <LoginForm handleLogin={handleLogin} />
       </Togglable>
@@ -117,19 +117,19 @@ const App = () => {
       <h2>blogs</h2>
       { user && <p>{user.username} logged in <button onClick={logout}>Logout</button></p>}
       {blogsToShow.map(blog =>
-        <Blog 
-          key={blog.id} 
-          blog={blog} 
-          user={user} 
-          vote={() => {vote(blog)}} 
-          deleteBlog={() => {deleteBlog(blog)}} 
+        <Blog
+          key={blog.id}
+          blog={blog}
+          user={user}
+          vote={() => {vote(blog)}}
+          deleteBlog={() => {deleteBlog(blog)}}
         />
       )}
-      { user && 
+      { user &&
         <Togglable buttonLabel='Add a new blog' ref={blogFormRef}>
-          <BlogForm handleNewBlog={handleNewBlog}/> 
+          <BlogForm handleNewBlog={handleNewBlog}/>
         </Togglable>
-      
+
       }
     </div>
   )
