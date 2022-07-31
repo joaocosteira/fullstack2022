@@ -37,7 +37,7 @@ blogsRouter.post('/', userExtractor ,async (request, response,next) => {
     const {userId,...blogAtt} = body
     //const user = await User.findById(userId)
 
-    const blog = new Blog({ ...blogAtt, user: user._id, author : user.name, likes : blogAtt.likes || 0 })
+    const blog = new Blog({ ...blogAtt, user: user._id, author : blogAtt.author || user.name, likes : blogAtt.likes || 0 })
 
     const savedBlog = await blog.save()
     user.blogs = user.blogs.concat(savedBlog._id)

@@ -1,16 +1,19 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Blog from './components/Blog'
 import BlogForm from './components/BlogForm'
+import LoginForm from './components/LoginForm'
 import Notification from './components/Notification'
+import Togglable from './components/Togglable'
 import blogService from './services/blogs'
 import loginService from './services/login'
 
 const App = () => {
   const [blogs, setBlogs] = useState([]);
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
   const [user, setUser] = useState(null);
   const [notification,setNotification] = useState({ message : null , style : null })
+
+  const loginFormRef = useRef()
+  const blogFormRef = useRef()
 
   useEffect(() => {
     blogService.getAll().then(blogs =>
@@ -46,25 +49,21 @@ const App = () => {
       console.log("newBlog",newBlog);
       setBlogs([...blogs,newBlog]);
       sendNotification(`Added '${newBlog.title}' by '${newBlog.author}'`, 'succ');
+      blogFormRef.current.toggleVisibility();
     }catch(e){
       sendNotification(e.message.error,'err')
     }
   }
-  const handleLogin = async (event) => {
-    event.preventDefault()
+  const handleLogin = async (credentials) => {
     
     try {
-      const user = await loginService.login({
-        username, password,
-      })
+      const user = await loginService.login(credentials)
 
       window.localStorage.setItem(
         'loggedBlogAppUser', JSON.stringify(user)
       ) 
       blogService.setToken(user.token);
       setUser(user)
-      setUsername('')
-      setPassword('')
       sendNotification(`Logged in as '${user.username}'`,'succ')
     } catch (exception) {
       sendNotification('Wrong credentials','err');
@@ -72,29 +71,6 @@ const App = () => {
   }
 
 
-  const loginForm = () =>(
-    <form onSubmit={handleLogin}>
-    <div>
-      username
-        <input
-        type="text"
-        value={username}
-        name="Username"
-        onChange={({ target }) => setUsername(target.value)}
-      />
-    </div>
-    <div>
-      password
-        <input
-        type="password"
-        value={password}
-        name="Password"
-        onChange={({ target }) => setPassword(target.value)}
-      />
-    </div>
-    <button type="submit">login</button>
-  </form>
-  )
 
   const logout = () =>{
 
@@ -105,17 +81,56 @@ const App = () => {
 
   console.log("user",user);
 
+
+  const vote = async (blog) =>{
+
+    try{
+      const updatedBlog = await blogService.update(blog.id, {...blog , likes : blog.likes + 1, user : blog.user.id })
+      setBlogs(blogs.map( b => b.id === updatedBlog.id ? updatedBlog : b))
+    }catch(e){
+      console.log(e)
+    }
+
+  }
+
+  const deleteBlog = async (blog) => {
+
+      try{
+        if(window.confirm(`Remove blog '${blog.title}' by ${blog.author}`)){
+          await blogService.deleteBlog(blog.id);
+          setBlogs(blogs.filter( b => b.id !== blog.id))
+        }
+      }catch(e){
+        console.log(e);
+      }
+
+  }
+  const blogsToShow = blogs.sort((a,b) => b.likes - a.likes )
   return (
     <div>
       <Notification notification={notification}/>
-      { !user && loginForm() }
+      { !user && 
+      <Togglable buttonLabel='Login' ref={loginFormRef}>
+        <LoginForm handleLogin={handleLogin} />
+      </Togglable>
+      }
       <h2>blogs</h2>
       { user && <p>{user.username} logged in <button onClick={logout}>Logout</button></p>}
-      {blogs.map(blog =>
-        <Blog key={blog.id} blog={blog} />
+      {blogsToShow.map(blog =>
+        <Blog 
+          key={blog.id} 
+          blog={blog} 
+          user={user} 
+          vote={() => {vote(blog)}} 
+          deleteBlog={() => {deleteBlog(blog)}} 
+        />
       )}
-
-      { user && <BlogForm handleNewBlog={handleNewBlog}/> }
+      { user && 
+        <Togglable buttonLabel='Add a new blog' ref={blogFormRef}>
+          <BlogForm handleNewBlog={handleNewBlog}/> 
+        </Togglable>
+      
+      }
     </div>
   )
 }
