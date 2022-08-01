@@ -12,11 +12,11 @@ const Blog = ({ blog,user,vote,deleteBlog }) => {
 
   const [showMore, setShowMore] = useState(false)
 
-  console.log('Blog', blog)
-  console.log('user', user)
+  //console.log('Blog', blog)
+  //console.log('user', user)
 
   return (
-    <div style={blogStyle}>
+    <div className='blog' style={blogStyle}>
       {
         !showMore ?
           <div>{blog.title} {blog.author} <button onClick={() => { setShowMore(!showMore) }}>view</button></div>

@@ -19,7 +19,7 @@ const BlogForm = ({ handleNewBlog }) => {
     setUrl('')
   }
   return(
-    <>
+    <div className="blogFormDiv">
       <h2>create new</h2>
       <form onSubmit={addBlog}>
         <p>title:<input value={title} onChange={({ target }) => { setTitle(target.value) }}/></p>
@@ -27,7 +27,7 @@ const BlogForm = ({ handleNewBlog }) => {
         <p>url:<input value={url} onChange={({ target }) => { setUrl(target.value) }}/></p>
         <button type="submit">create</button>
       </form>
-    </>
+    </div>
   )
 }
 
