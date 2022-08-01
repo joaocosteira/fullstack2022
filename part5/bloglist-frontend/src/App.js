@@ -114,7 +114,7 @@ const App = () => {
         <LoginForm handleLogin={handleLogin} />
       </Togglable>
       }
-      <h2>blogs</h2>
+      <h2 className='blog-header'>blogs</h2>
       { user && <p>{user.username} logged in <button onClick={logout}>Logout</button></p>}
       {blogsToShow.map(blog =>
         <Blog
