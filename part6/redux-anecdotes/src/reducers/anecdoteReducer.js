@@ -1,3 +1,5 @@
+//not necessary since we have a backend now
+/* 
 const anecdotesAtStart = [
   'If it hurts, do it more often',
   'Adding manpower to a late software project makes it later!',
@@ -5,7 +7,7 @@ const anecdotesAtStart = [
   'Any fool can write code that a computer can understand. Good programmers write code that humans can understand.',
   'Premature optimization is the root of all evil.',
   'Debugging is twice as hard as writing the code in the first place. Therefore, if you write the code as cleverly as possible, you are, by definition, not smart enough to debug it.'
-]
+] 
 
 const getId = () => (100000 * Math.random()).toFixed(0)
 
@@ -16,19 +18,22 @@ const asObject = (anecdote) => {
     votes: 0
   }
 }
-
 const initialState = anecdotesAtStart.map(asObject)
+*/
 
-const reducer = (state = initialState, action) => {
+const reducer = (state = [], action) => {
   console.log('state now: ', state)
   console.log('action', action)
 
   switch(action.type){
     case("VOTE"):
-      return state.map(a => a.id === action.data.id ? { ...a, votes : a.votes + 1 } : a)
+      //return state.map(a => a.id === action.data.id ? { ...a, votes : a.votes + 1 } : a)
+      return state.map(a => a.id === action.data.id ? action.data : a)
     case("ADD_ANECDOTE"):
       console.log("Add anec",action.data)
       return ([...state, action.data])
+    case("SET_ANECDOTES"):
+      return action.data
     default:
       return state
   }
@@ -36,17 +41,25 @@ const reducer = (state = initialState, action) => {
 
 
 // Action Creators:
-export const voteAnecdote = (id) =>(
+export const voteAnecdote = (anecdote) =>(
   {
     type : "VOTE",
-    data : { id }
+    data : anecdote
   }
 )
 
 export const addAnecdote = (anecdote) => (
   {
     type : "ADD_ANECDOTE",
-    data : asObject(anecdote)
+    //data : asObject(anecdote)
+    data : anecdote
+  }
+)
+
+export const setAnecdotes = (anecdotes) => (
+  {
+    type : "SET_ANECDOTES",
+    data : anecdotes
   }
 )
 
