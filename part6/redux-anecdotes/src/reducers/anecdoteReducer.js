@@ -21,7 +21,10 @@ const asObject = (anecdote) => {
 const initialState = anecdotesAtStart.map(asObject)
 */
 
-const reducer = (state = [], action) => {
+/**
+ * Converted for the 6.15-6.18, since we want async action creators.
+ */
+/* const reducer = (state = [], action) => {
   console.log('state now: ', state)
   console.log('action', action)
 
@@ -61,6 +64,59 @@ export const setAnecdotes = (anecdotes) => (
     type : "SET_ANECDOTES",
     data : anecdotes
   }
-)
-
+) 
 export default reducer
+
+*/
+
+import { createSlice } from '@reduxjs/toolkit'
+import anecdoteService from '../services/anecdotes'
+
+const anecdoteSlice = createSlice({
+  name: 'anecdotes',
+  initialState : [],
+  reducers : {
+    /*
+    voteAnecdote : (state,action) => {
+      return state.map(a => a.id === action.payload.id ? action.payload : a)
+      },
+       addAnecdote : (state,action) => {
+        return ([...state, action.payload])
+      }, */
+      setAnecdotes : (state,action) => {
+        return action.payload
+      },
+      appendAnecdote : (state, action) => {
+        state.push(action.payload)
+      },
+      updateAnecdote : (state,action) =>{
+        return state.map(a => a.id === action.payload.id ? action.payload : a)
+      }
+  }
+})
+
+export const { updateAnecdote, setAnecdotes, appendAnecdote } = anecdoteSlice.actions
+
+
+export const initializeAnecdotes = () => {
+  return async dispatch => {
+    const anecdotes = await anecdoteService.getAll()
+    dispatch(setAnecdotes(anecdotes))
+  }
+}
+
+export const addAnecdote = anecdote => {
+  return async dispatch => {
+    const newAnecdote = await anecdoteService.createNewAnecdote(anecdote)
+    dispatch(appendAnecdote(newAnecdote))
+  }
+}
+
+export const voteAnecdote = anecdote => {
+  return async dispatch => {
+    const updatedAnecdote = await anecdoteService.updateAnecdote({...anecdote, votes : anecdote.votes + 1})
+    dispatch(updateAnecdote(updatedAnecdote))
+  }
+}
+
+export default anecdoteSlice.reducer

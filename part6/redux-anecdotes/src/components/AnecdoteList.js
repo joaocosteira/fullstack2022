@@ -1,8 +1,8 @@
 import { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { setAnecdotes, voteAnecdote } from '../reducers/anecdoteReducer'
-import { removeNotification, sendNotification } from '../reducers/notificationReducer'
-import anecdotesServices from '../services/anecdotes'
+import { initializeAnecdotes, voteAnecdote } from '../reducers/anecdoteReducer'
+import { setNotification } from '../reducers/notificationReducer'
+
 
 const filterSearched = ({ searchTerm },anecdotes) => searchTerm === '' ? 
     anecdotes : 
@@ -15,20 +15,14 @@ const AnecdoteList = () =>{
     const anecdotesToShow = filterSearched(searchTerm,anecdotes.slice()).sort((a,b) => b.votes - a.votes)
     const dispatch = useDispatch()
 
-    useEffect(()=>{
-        anecdotesServices.getAll().then(r => { dispatch(setAnecdotes(r))})
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    },[])
+    useEffect(()=>{ dispatch(initializeAnecdotes()) },[])
 
     const vote = async (anecdote) => {
 
-        //const id = anecdote.id
-        const updatedAnec = await anecdotesServices.updateAnecdote(anecdote)
-        dispatch(voteAnecdote(updatedAnec))
-        dispatch(sendNotification(`you voted '${updatedAnec.content}'`))
-        setTimeout(()=>{
-            dispatch(removeNotification());
-        },2000)
+        dispatch(voteAnecdote(anecdote))
+        dispatch(setNotification(`you voted '${anecdote.content}'`))
+
     }
 
     return(
