@@ -2,7 +2,8 @@ const blogsRouter = require('express').Router();
 const Blog = require('../models/blog')
 const User = require('../models/user')
 const jwt = require('jsonwebtoken')
-const {userExtractor} = require('../utils/middleware')
+const {userExtractor} = require('../utils/middleware');
+const { findById } = require('../models/blog');
 
 blogsRouter.get('/', async (request, response) => {
 
@@ -40,8 +41,14 @@ blogsRouter.post('/', userExtractor ,async (request, response,next) => {
     const blog = new Blog({ ...blogAtt, user: user._id, author : blogAtt.author || user.name, likes : blogAtt.likes || 0 })
 
     const savedBlog = await blog.save()
+    savedBlog.populate('user', { username: 1, name: 1 })
+    
+    //.then(t => t.populate('user', { username: 1, name: 1 }).execPopulate())
     user.blogs = user.blogs.concat(savedBlog._id)
     await user.save()
+
+    //In the app I need the populated version...
+    //const returnedBlog = await findById(savedBlog._id).populate('user', { username: 1, name: 1 });
     response.status(201).json(savedBlog)
   }catch(e){
     next(e)
@@ -62,7 +69,7 @@ blogsRouter.delete('/:id', userExtractor ,async (request, response,next) => {
     console.log("user",user)
     console.log("author",blogToDelete.user)
     if(blogToDelete && blogToDelete.user.toString() === user._id.toString()){
-      await Blog.findByIdAndRemove(request.params.id);
+      await Blog.findByIdAndRemove(request.params.id)
       response.status(204).end();
     }else{
       response.status(400).json({ error : "Trying to delete a post that you didn't make or that doesn't exist"}) 
@@ -88,7 +95,7 @@ blogsRouter.put('/:id', async (request, response) => {
       request.params.id, 
       request.body, 
       { new: true, runValidators: true, context: 'query' }
-    )
+    ).populate('user', { username: 1, name: 1 });
     response.json(updatedPerson)
   }catch(error){
     if (error.name === 'CastError') {

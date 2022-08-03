@@ -1,0 +1,6 @@
+node_modules
+cypress
+tests_cypress_from_the_material
+build
+.eslintrc.js
+cypress.config.js
