@@ -1,19 +1,21 @@
 import { useState, useEffect, useRef } from "react";
+import { useDispatch } from "react-redux";
 import Blog from "./components/Blog";
 import BlogForm from "./components/BlogForm";
 import LoginForm from "./components/LoginForm";
 import Notification from "./components/Notification";
 import Togglable from "./components/Togglable";
+import { setNotification } from "./reducers/notificationReducer";
 import blogService from "./services/blogs";
 import loginService from "./services/login";
 
 const App = () => {
   const [blogs, setBlogs] = useState([]);
   const [user, setUser] = useState(null);
-  const [notification, setNotification] = useState({
-    message: null,
-    style: null,
-  });
+  //const [notification, setNotification] = useState({ message: null, style: null });
+
+  const dispatch = useDispatch();
+
 
   const loginFormRef = useRef();
   const blogFormRef = useRef();
@@ -31,11 +33,8 @@ const App = () => {
     }
   }, []);
 
-  const sendNotification = (message, style = "err", delay = 2000) => {
-    setNotification({ message, style });
-    setTimeout(() => {
-      setNotification({ message: null, style: null });
-    }, delay);
+  const sendNotification = (message, style = "err", delay = 2) => {
+    dispatch(setNotification(message,style,delay))
   };
 
   const handleNewBlog = async (blogObject) => {
@@ -101,7 +100,7 @@ const App = () => {
   const blogsToShow = blogs.sort((a, b) => b.likes - a.likes);
   return (
     <div>
-      <Notification notification={notification} />
+      <Notification/>
       {!user && (
         <Togglable buttonLabel="Login" ref={loginFormRef}>
           <LoginForm handleLogin={handleLogin} />
