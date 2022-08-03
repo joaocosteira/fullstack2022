@@ -18,7 +18,8 @@
     "eslint": "eslint .",
     "cypress:open": "cypress open",
     "start:test": "cross-env NODE_ENV=test node index.js",
-    "test:e2e": "cypress run"
+    "test:e2e": "cypress run",
+    "prettier": "npx prettier --write ."
   },
   "eslintConfig": {
     "extends": [
@@ -46,6 +47,7 @@
     "cypress": "^10.3.1",
     "eslint-plugin-cypress": "^2.12.1",
     "eslint-plugin-jest": "^26.7.0",
-    "jest-watch-typeahead": "^0.6.5"
+    "jest-watch-typeahead": "^0.6.5",
+    "prettier": "2.7.1"
   }
 }
