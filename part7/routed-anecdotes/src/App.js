@@ -47,7 +47,7 @@ const App = () => {
   ? anecdotes.find(anecdote => anecdote.id === Number(match.params.id))
   : null
   
-  console.log(notification)
+
   return (
     <div>
       <h1>Software anecdotes</h1>
