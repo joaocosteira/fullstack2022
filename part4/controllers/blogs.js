@@ -12,6 +12,13 @@ blogsRouter.get('/', async (request, response) => {
 
 })
 
+blogsRouter.get('/:id', async (request, response) => {
+
+  const blog = await Blog.findById(request.params.id).populate('user', { username: 1, name: 1 });
+  response.json(blog);
+
+})
+
 
 /* const getTokenFrom = request => {
   const authorization = request.get('authorization')
@@ -42,7 +49,7 @@ blogsRouter.post('/', userExtractor ,async (request, response,next) => {
 
     const savedBlog = await blog.save()
     savedBlog.populate('user', { username: 1, name: 1 })
-    
+
     //.then(t => t.populate('user', { username: 1, name: 1 }).execPopulate())
     user.blogs = user.blogs.concat(savedBlog._id)
     await user.save()
@@ -90,7 +97,7 @@ blogsRouter.delete('/:id', userExtractor ,async (request, response,next) => {
 blogsRouter.put('/:id', async (request, response) => {
   
   try{
-
+    console.log("Chega AQUI!!!")
     const updatedPerson = await Blog.findByIdAndUpdate(
       request.params.id, 
       request.body, 

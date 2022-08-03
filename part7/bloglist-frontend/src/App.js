@@ -1,18 +1,20 @@
 import { useState, useEffect, useRef } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import Blog from "./components/Blog";
 import BlogForm from "./components/BlogForm";
 import LoginForm from "./components/LoginForm";
 import Notification from "./components/Notification";
 import Togglable from "./components/Togglable";
+import { addBlog, initializeBlogs, likeBlog, removeBlog } from "./reducers/blogReducer";
 import { setNotification } from "./reducers/notificationReducer";
 import blogService from "./services/blogs";
 import loginService from "./services/login";
 
 const App = () => {
-  const [blogs, setBlogs] = useState([]);
+
+  const blogs = useSelector(s => s.blogs)
   const [user, setUser] = useState(null);
-  //const [notification, setNotification] = useState({ message: null, style: null });
+
 
   const dispatch = useDispatch();
 
@@ -21,7 +23,7 @@ const App = () => {
   const blogFormRef = useRef();
 
   useEffect(() => {
-    blogService.getAll().then((blogs) => setBlogs(blogs));
+    dispatch(initializeBlogs())
   }, []);
 
   useEffect(() => {
@@ -38,15 +40,10 @@ const App = () => {
   };
 
   const handleNewBlog = async (blogObject) => {
-    console.log("blogObject", blogObject);
+
     try {
-      const newBlog = await blogService.create(blogObject);
-      console.log("newBlog", newBlog);
-      setBlogs([...blogs, newBlog]);
-      sendNotification(
-        `Added '${newBlog.title}' by '${newBlog.author}'`,
-        "succ"
-      );
+      dispatch(addBlog(blogObject))
+      sendNotification(`Added '${blogObject.title}' by '${blogObject.author}'`,"succ");
       blogFormRef.current.toggleVisibility();
     } catch (e) {
       console.log(e);
@@ -75,13 +72,9 @@ const App = () => {
   console.log("user", user);
 
   const vote = async (blog) => {
+
     try {
-      const updatedBlog = await blogService.update(blog.id, {
-        ...blog,
-        likes: blog.likes + 1,
-        user: blog.user.id,
-      });
-      setBlogs(blogs.map((b) => (b.id === updatedBlog.id ? updatedBlog : b)));
+      dispatch(likeBlog(blog));
     } catch (e) {
       console.log(e);
     }
@@ -90,14 +83,14 @@ const App = () => {
   const deleteBlog = async (blog) => {
     try {
       if (window.confirm(`Remove blog '${blog.title}' by ${blog.author}`)) {
-        await blogService.deleteBlog(blog.id);
-        setBlogs(blogs.filter((b) => b.id !== blog.id));
+        dispatch(removeBlog(blog.id))
       }
     } catch (e) {
       console.log(e);
     }
   };
-  const blogsToShow = blogs.sort((a, b) => b.likes - a.likes);
+
+  const blogsToShow = blogs.slice().sort((a, b) => b.likes - a.likes);
   return (
     <div>
       <Notification/>
