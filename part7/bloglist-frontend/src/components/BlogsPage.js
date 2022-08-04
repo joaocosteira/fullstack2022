@@ -5,13 +5,7 @@ import BlogForm from "./BlogForm";
 import { addBlog } from "../reducers/blogReducer";
 import { Link } from "react-router-dom";
 
-const blogStyle = {
-  paddingTop: 10,
-  paddingLeft: 2,
-  border: "solid",
-  borderWidth: 1,
-  marginBottom: 5,
-};
+
 
 
 const BlogsPage = ({ sendNotification }) => {
@@ -40,8 +34,8 @@ const BlogsPage = ({ sendNotification }) => {
     <>
       <h2 className="blog-header">blogs</h2>
       {sortedBlogs.map((blog) => (
-        <div style={blogStyle} key={blog.id}>
-          <Link to={`/blogs/${blog.id}`}><b>{blog.title}</b> by {blog.author}</Link>
+        <div className="card mt-2" key={blog.id}>
+          <Link className="card-body" to={`/blogs/${blog.id}`}><b>{blog.title}</b> by {blog.author}</Link>
         </div>
       ))}
       {user && (

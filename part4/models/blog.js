@@ -9,6 +9,9 @@ const blogSchema = new mongoose.Schema({
       type : String,
       required : true
     },
+    comments: {
+      type : [String],
+    },
     url: {
       type : String,
       required : true

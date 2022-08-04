@@ -44,7 +44,7 @@ const App = () => {
   const blog = matchBlog ? blogs.find(b => b.id === matchBlog.params.id) : null
 
   return (
-    <div>
+    <div className="container mt-2">
       <LoginAndNavbar sendNotification={sendNotification} />
       <Notification/>
       <Routes>

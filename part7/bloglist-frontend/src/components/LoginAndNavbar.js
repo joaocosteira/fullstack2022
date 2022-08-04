@@ -6,6 +6,7 @@ import LoginForm from "./LoginForm";
 import { logUser,logoutUser } from "../reducers/userReducer";
 import loginService from "../services/login";
 import blogService from '../services/blogs'
+import { Button, Navbar } from "react-bootstrap";
 
 
 const LoginAndNavbar = (props) => {
@@ -34,20 +35,20 @@ const LoginAndNavbar = (props) => {
   const logout = () => { dispatch(logoutUser()) };
 
   return(
-    <>
+    <Navbar className="navbar navbar-light" style={ { backgroundColor : "#e3f2fd" }}>
       {
         !user ? (
           <Togglable buttonLabel="Login" ref={loginFormRef}>
             <LoginForm handleLogin={handleLogin} />
           </Togglable>
         ) :
-          <div>
-            <Link to='/' style={padding}>blogs</Link>
+          <div className="m-2">
+            <Link to='/'  style={padding}>blogs</Link>
             <Link to='/users' style={padding}>users</Link>
-            <span>{user.username} logged in <button onClick={logout}>Logout</button></span>
+            <span>{user.username} logged in <Button onClick={logout}>Logout</Button></span>
           </div>
       }
-    </>
+    </Navbar>
   )
 }
 
