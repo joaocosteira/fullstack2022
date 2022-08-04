@@ -10,6 +10,7 @@ import { setNotification } from "./reducers/notificationReducer";
 import { initializeUser, logUser, logoutUser } from "./reducers/userReducer";
 import loginService from "./services/login";
 import blogService from './services/blogs'
+import Navbar from "./components/Navbar";
 
 const App = () => {
 
@@ -41,7 +42,6 @@ const App = () => {
   };
   const handleLogin = async (credentials) => {
     try {
-      //dispatch(logUser(credentials))
       const user = await loginService.login(credentials);
       window.localStorage.setItem("loggedBlogAppUser", JSON.stringify(user));
       blogService.setToken(user.token);
@@ -76,18 +76,18 @@ const App = () => {
   const blogsToShow = blogs.slice().sort((a, b) => b.likes - a.likes);
   return (
     <div>
+      {
+        !user ? (
+          <Togglable buttonLabel="Login" ref={loginFormRef}>
+            <LoginForm handleLogin={handleLogin} />
+          </Togglable>
+        ) :
+          <Navbar  user={user} logout={logout} />
+      }
       <Notification/>
-      {!user && (
-        <Togglable buttonLabel="Login" ref={loginFormRef}>
-          <LoginForm handleLogin={handleLogin} />
-        </Togglable>
-      )}
+
       <h2 className="blog-header">blogs</h2>
-      {user && (
-        <p>
-          {user.username} logged in <button onClick={logout}>Logout</button>
-        </p>
-      )}
+
       {blogsToShow.map((blog) => (
         <Blog
           key={blog.id}
