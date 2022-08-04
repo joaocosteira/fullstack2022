@@ -1,111 +1,58 @@
-import { useEffect, useRef } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import Blog from "./components/Blog";
-import BlogForm from "./components/BlogForm";
-import LoginForm from "./components/LoginForm";
+import { useEffect } from "react";
+import { useDispatch,useSelector } from "react-redux";
 import Notification from "./components/Notification";
-import Togglable from "./components/Togglable";
-import { addBlog, initializeBlogs, likeBlog, removeBlog } from "./reducers/blogReducer";
+import { initializeBlogs } from "./reducers/blogReducer";
 import { setNotification } from "./reducers/notificationReducer";
-import { initializeUser, logUser, logoutUser } from "./reducers/userReducer";
-import loginService from "./services/login";
-import blogService from './services/blogs'
-import Navbar from "./components/Navbar";
+import { initializeUser } from "./reducers/userReducer";
+import LoginAndNavbar from "./components/LoginAndNavbar";
+import { Routes, Route,useMatch } from "react-router-dom";
+import BlogsPage from "./components/BlogsPage";
+import Users from "./components/Users";
+import User from "./components/User";
+import Blog from "./components/Blog";
+import _ from 'lodash'
 
 const App = () => {
 
-  const blogs = useSelector(s => s.blogs)
-  const { user } = useSelector(s => s.user)
-
   const dispatch = useDispatch();
-
-  const loginFormRef = useRef();
-  const blogFormRef = useRef();
 
   useEffect(() => { dispatch(initializeBlogs()) }, []);
   useEffect(() => { dispatch(initializeUser()) }, []);
+
+  /*
+   Lazy solution:
+    Instead of creating a user services, add them to the store etc
+    I simply flipped the blogs by grouping them according to users.
+    This is a simple solution and since we need the blogs anyways to route each
+    blog page its fine, but has a small problem: You wont be able
+    to list users with 0 posts, which I think its fine...
+   */
+  const blogs = useSelector( s => s.blogs);
+  const users =  _.chain(blogs)
+    .groupBy( blog => blog.user.username)
+    .transform((r,v,k) => { r[k] = { blogs  : v , user : v[0].user } }).value();
 
   const sendNotification = (message, style = "err", delay = 2) => {
     dispatch(setNotification(message,style,delay))
   };
 
-  const handleNewBlog = async (blogObject) => {
 
-    try {
-      dispatch(addBlog(blogObject))
-      sendNotification(`Added '${blogObject.title}' by '${blogObject.author}'`,"succ");
-      blogFormRef.current.toggleVisibility();
-    } catch (e) {
-      console.log(e);
-      sendNotification(e.message, "err");
-    }
-  };
-  const handleLogin = async (credentials) => {
-    try {
-      const user = await loginService.login(credentials);
-      window.localStorage.setItem("loggedBlogAppUser", JSON.stringify(user));
-      blogService.setToken(user.token);
-      dispatch(logUser(user))
-      sendNotification(`Logged in as '${user.username}'`, "succ");
-    } catch (exception) {
-      sendNotification("Wrong credentials", "err");
-    }
-  };
+  const match = useMatch('/users/:id')
+  const user = match ? Object.values(users).find( ({ user }) => user.id === match.params.id) : null
 
-  const logout = () => { dispatch(logoutUser()) };
+  const matchBlog = useMatch('/blogs/:id')
+  const blog = matchBlog ? blogs.find(b => b.id === matchBlog.params.id) : null
 
-  const vote = async (blog) => {
-
-    try {
-      dispatch(likeBlog(blog));
-    } catch (e) {
-      console.log(e);
-    }
-  };
-
-  const deleteBlog = async (blog) => {
-    try {
-      if (window.confirm(`Remove blog '${blog.title}' by ${blog.author}`)) {
-        dispatch(removeBlog(blog.id))
-      }
-    } catch (e) {
-      console.log(e);
-    }
-  };
-
-  const blogsToShow = blogs.slice().sort((a, b) => b.likes - a.likes);
   return (
     <div>
-      {
-        !user ? (
-          <Togglable buttonLabel="Login" ref={loginFormRef}>
-            <LoginForm handleLogin={handleLogin} />
-          </Togglable>
-        ) :
-          <Navbar  user={user} logout={logout} />
-      }
+      <LoginAndNavbar sendNotification={sendNotification} />
       <Notification/>
-
-      <h2 className="blog-header">blogs</h2>
-
-      {blogsToShow.map((blog) => (
-        <Blog
-          key={blog.id}
-          blog={blog}
-          user={user}
-          vote={() => {
-            vote(blog);
-          }}
-          deleteBlog={() => {
-            deleteBlog(blog);
-          }}
-        />
-      ))}
-      {user && (
-        <Togglable buttonLabel="Add a new blog" ref={blogFormRef}>
-          <BlogForm handleNewBlog={handleNewBlog} />
-        </Togglable>
-      )}
+      <Routes>
+        <Route path="/" element={<BlogsPage sendNotification={sendNotification}/>}/>
+        <Route path="/users" element={<Users users={users} />}/>
+        <Route path="/users/:id" element={<User user={user} />}/>
+        <Route path="/blogs/:id" element={<Blog blog={blog}/>}/>
+      </Routes>
     </div>
   );
 };
