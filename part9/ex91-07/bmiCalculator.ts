@@ -19,7 +19,7 @@ interface BmiValues {
 
   }
   
-  const calculateBmi = (height_cm : number , weight_kg : number) : string => {
+export const calculateBmi = (height_cm : number , weight_kg : number) : string => {
 
     const bmi = weight_kg / (height_cm / 100) ** 2
 
@@ -32,6 +32,9 @@ interface BmiValues {
             return "You're overweight"
         case bmi >= 30:
             return "You're obese"
+        default:
+          return "Something went wrong..."
+
     }
 }
 

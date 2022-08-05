@@ -25,7 +25,7 @@ const parseExerciseArguments = (args: Array<string>): ExerciseValues => {
     const daily = process.argv.slice(2,).map(Number)
     const target = daily.shift()
 
-    if (daily.every(n => !isNaN(n)) && !isNaN(target)) {
+    if (daily.every(n => !isNaN(n)) && target && !isNaN(target)) {
       return {
         dailyExercise: daily,
         target: target
