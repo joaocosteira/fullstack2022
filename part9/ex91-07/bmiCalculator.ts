@@ -12,31 +12,31 @@ interface BmiValues {
       return {
         height_cm: Number(args[2]),
         weight_kg: Number(args[3])
-      }
+      };
     } else {
       throw new Error('Provided values were not numbers!');
     }
 
-  }
+  };
   
 export const calculateBmi = (height_cm : number , weight_kg : number) : string => {
 
-    const bmi = weight_kg / (height_cm / 100) ** 2
+    const bmi = weight_kg / (height_cm / 100) ** 2;
 
     switch(true){
         case bmi < 15 :
-            return "You're underweight"
+            return "You're underweight";
         case bmi >= 15 && bmi < 25 :
-            return "You're normal weight"
+            return "You're normal weight";
         case bmi >= 25 && bmi < 30:
-            return "You're overweight"
+            return "You're overweight";
         case bmi >= 30:
-            return "You're obese"
+            return "You're obese";
         default:
-          return "Something went wrong..."
+          return "Something went wrong...";
 
     }
-}
+};
 
   
   try {
@@ -46,7 +46,7 @@ export const calculateBmi = (height_cm : number , weight_kg : number) : string =
 
   } catch (error: unknown) {
 
-    let errorMessage = 'Something bad happened.'
+    let errorMessage = 'Something bad happened.';
     if (error instanceof Error) {
       errorMessage += ' Error: ' + error.message;
     }
