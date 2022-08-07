@@ -12,7 +12,7 @@ const PartBase = ({ part } : { part : CoursePartBase }) : JSX.Element => (
 const Part = ({ part } : { part : CoursePart}) : JSX.Element => {
   return(
     <>
-      < PartBase part={part} />
+      <PartBase part={part} />
       {(()=>{
         switch(part.type){
           case("normal"):
