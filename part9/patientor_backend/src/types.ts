@@ -80,6 +80,14 @@ export type UnionOmit<T, K extends string | number | symbol> = T extends unknown
 // Define Entry without the 'id' property
 export type EntryWithoutId = UnionOmit<Entry, 'id'>;
 export type NewEntry = UnionOmit<Entry, 'id'>;
+
+//So this is an alternative to:
+/* 
+export type NewEntry =
+  | Omit<HospitalEntry, "id">
+  | Omit<OccupationalHealthcareEntry, "id">
+  | Omit<HealthCheckEntry, "id">; 
+*/
 //export type NewBaseEntryId = UnionOmit<BaseEntry, 'id'>;
 
 export interface Patient {
